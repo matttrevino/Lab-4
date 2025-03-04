@@ -47,6 +47,8 @@ library(tidyverse)
 library(janitor)
 library(knitr)
 library(readr)
+use_git_config(user.name = "Matthew Trevino",
+               user.email = "matt_trevino17@yahoo.com")
 ```
 
 # Part 2: Data Context
@@ -106,7 +108,7 @@ Write the data to a `csv` file called `buoy_update.csv`. Be sure to write it to 
 
 ```{r}
 #| label: write-data-part-1
-library(readr)
+
 write_csv(buoy_clean, file = "buoy_update.csv")
 buoy_update <- read_csv("buoy_update.csv",
                         na = c("99", "99.0", "99.00", "999", "999.0", "999.00"),
@@ -168,9 +170,15 @@ One fun source for data is [Tidy Tuesday](https://github.com/rfordatascience/tid
 
 **For your found data write a brief description of the data and and provide its source.**
 
->Insert your description and link to your source here. Identify 2-3 research questions you could try to answer with this data.  
+https://www.ncei.noaa.gov/data/local-climatological-data/access/2025/ 
 
+https://mavenanalytics.io/data-playground?page=11&pageSize=5
 
+This data is about chess games! It is taken from lichess, a popular online chess site, and shows data about chess player names, wins, piece color, piece color victory, etc. I think this will be really interesting to analyze because there are a lot of questions I have about it. 
+
+> What is the average rating for those who won by resignation? This questions is interesting because the theory is newer players will be more willing to resign when in a lost position than a higher rated player who knows anybody can make a mistake. 
+What color wins more often, white or black?
+What is the average time for white to win vs. black to win?
 
 
 # Lab 4 Submission
