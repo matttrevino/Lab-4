@@ -39,26 +39,14 @@ In the code chunk below, load in the packages necessary for your analysis. You s
 ```{r}
 #| label: setup
 #| eval: false
+#| embed-resources: true
+#| code-tools: true
+#| echo: true
 library(usethis)
 library(tidyverse)
-library(ggplot2)
 library(janitor)
 library(knitr)
-# Read data and clean column names
-buoy <- read.table("buoy_2024.txt", na = c("99", "99.0", "99.00", "999", "999.0", "999.00"), header = TRUE)
-write.csv(buoy, "buoy.csv")
-
-buoy <- buoy %>%
-  clean_names()
-
-# Mutate only numeric columns
-buoy_final <- buoy %>%
-  mutate(across(.cols = c("mm", "atmp"), ~parse_double(as.character(.x))))
-
-write.csv(buoy_final, "buoy_final.csv")
-buoy_final
-
-#sorry I was following the github page and did it all in one chunk instead of below....
+library(readr)
 ```
 
 # Part 2: Data Context
@@ -88,7 +76,7 @@ When you read in the data give it an appropriate name for what the data represen
 
 ```{r}
 #| label: load-data
-
+buoy <- read_table("buoy_2024.txt")
 ```
 
 Notice that the data is all read in as a character value and the first row contains information that is not data, but additional information about the variables: this is called a "comment" in the data.  
@@ -98,7 +86,7 @@ In your data, you will notice the `#` in front of `yr` in the second row. That i
 
 ```{r}
 #| label: load-data-comment
-
+buoy <- read_table("buoy_2024.txt", comment = "#")
 ```
 
 
@@ -107,7 +95,8 @@ We want to use snake_case for our variable names. Use the `janitor` package to c
 
 ```{r}
 #| label: clean-names
-
+buoy_clean <- clean_names(buoy)
+write_csv(buoy_clean, file = "buoy_clean.csv")
 ```
 
 ## Step 4: Write the Data Part 1
@@ -117,6 +106,11 @@ Write the data to a `csv` file called `buoy_update.csv`. Be sure to write it to 
 
 ```{r}
 #| label: write-data-part-1
+library(readr)
+write_csv(buoy_clean, file = "buoy_update.csv")
+buoy_update <- read_csv("buoy_update.csv",
+                        na = c("99", "99.0", "99.00", "999", "999.0", "999.00"),
+                        col_types = cols(.default = col_character()))
 
 ```
 
@@ -132,7 +126,8 @@ Remember that now we are reading back in a data file of type `csv`. Now when you
 
 ```{r}
 #| label: load-data-again
-
+buoy_final <- buoy_update |> 
+  mutate(across(.cols = everything(), ~parse_double(.x)))
 ```
 
 This is great! But we created another problem. Now all of our numeric values are being treated like characters and we don't want that. There are a couple of ways to fix this. We can write and reread in the data setting the column types to `double` or we can use the `readr` parsing functions. 
@@ -147,14 +142,11 @@ Now that are data is "analytic ready", go ahead and read in your clean data and 
 
 ```{r}
 #| label: monterey-air-temp-viz
-#makes the x axis have proper discrete values (why was this so hard to figure out)
-library(ggplot2)
-#used Chatgpt to figure out how to make "mm" display as a numeric variable for the sake of the graph because nothing else I tried was working :( -> made x as.numeric(mm). 
 
 ggplot(data = buoy_final, aes(x = as.numeric(mm), y = atmp, color = factor(mm))) + 
   geom_point(shape = 16, alpha = 0.6, position = "jitter") + 
   scale_color_viridis_d(end = 0.85) +  
-  geom_smooth(method = "loess", se = FALSE, size = 1, color = "black") +  
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = "black") +  
   scale_x_continuous(breaks = 1:12) + 
   labs(
     x = "Month", 
